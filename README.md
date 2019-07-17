@@ -18,7 +18,7 @@ mkdir files_to_decrypt
 $ node generateKey.js
 ```
 
-~~~ Warning ~~~ 
+!!Warning!!
 
 Store this key somewhere sensible. If you lose the key, you can't decrypt your files. Fair warning.
 
