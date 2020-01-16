@@ -22,16 +22,26 @@ pull(
       cb(err, { fileName, file });
     });
   }),
-  pull.map(({ file, fileName }) => ({ file: decrypt(file, key), fileName })),
+  pull.map(({ file, fileName }) => {
+    try {
+      file = decrypt(file, key);
+    } catch (error) {
+      console.error(fileName, error);
+      file = null;
+    }
+    return { file, fileName };
+  }),
   pull.map(({ file, fileName }) => ({
     file,
     fileName: fileName.replace(new RegExp(SUFFIX), "")
   })),
+  pull.filter(({ file, fileName }) => file ? true : false ),
   pull.asyncMap(({ file, fileName }, cb) => {
-    fs.writeFile(fileName, file, cb);
+    let newFileName = fileName.replace('files_to_decrypt', 'files_decrypted');
+    fs.writeFile(newFileName, file, cb);
   }),
   pull.collect((err, results) => {
-    if (err) return console.log("Error encrypting: ", err);
-    console.log(`Done encrypting ${results.length} files`);
+    if (err) return console.log("Error decrypting: ", err);
+    console.log(`Done decrypting ${results.length} files`);
   })
 );

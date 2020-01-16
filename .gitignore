@@ -1,3 +1,5 @@
-files_to_encrypt
-files_to_decrypt
+files_to_encrypt/*
+files_to_decrypt/*
+files_decrypted/*
+files_encrypted/*
 node_modules
