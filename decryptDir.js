@@ -9,6 +9,19 @@ if (!key) {
   return console.error("KEY environment variable was not set, aborting");
 }
 
+const prepareDocumentPath = (fileName) => {
+  let documentPath = fileName.replace("/files_to_decrypt/", "/decrypted/");
+  if (!documentPath.includes("/US_TAX_FORM/20")) {
+    // Get year from filename (US_TAX_FORM_2020_xxx.pdf)
+    const year = fileName.match(/US_TAX[ _]FORM_(\d{4})/i)[1];
+    documentPath = documentPath
+      .replace("/decrypted/", `/decrypted/US_TAX_FORM/${year}/`) // Move to year folder
+      .replace(/US_TAX_FORM_\d{4}_/, ""); // Remove year prefix from filename
+  }
+
+  return documentPath;
+};
+
 const filesToIgnore = [
   "robots.txt",
   // Not sure where this one is coming from, it's not linked in the DB
@@ -39,17 +52,7 @@ pull(
     fileName: fileName.replace(/\.encrypted$/, ""),
   })),
   pull.asyncMap(({ file, fileName }, cb) => {
-    let outPath = fileName.replace("/files_to_decrypt/", "/decrypted/");
-    if (!outPath.includes("/US_TAX_FORM/20")) {
-      // Get year from filename (US_TAX_FORM_2020_xxx.pdf)
-      console.log(fileName);
-      const year = fileName.match(/US_TAX[ _]FORM_(\d{4})/i)[1];
-      outPath = outPath.replace(
-        "/decrypted/",
-        `/decrypted/US_TAX_FORM/${year}/`
-      );
-    }
-
+    const outPath = prepareDocumentPath(fileName);
     const outDir = path.dirname(outPath);
     if (!fs.existsSync(outDir)) {
       fs.mkdirSync(outDir, { recursive: true });
